@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="left-panel">
+    <div class="left-text">
+      File Manager
+    </div>
+    <a href="/reset">reset all files</a>
+  </div>
+  <div class="right-panel">
+    <div class="navbar file-bar">
+      <div class="nav-item nav-files">id</div>
+      <div class="nav-item nav-files">icon</div>
+      <div class="nav-item nav-files">name</div>
+      <div class="nav-item nav-files">size</div>
+      <div class="nav-item nav-files">type</div>
+      <div class="nav-item nav-files">-</div>
+      <div class="nav-item nav-files">-</div>
+      <div class="nav-item nav-files">-</div>
+    </div>
+    <div class="file-list">
+    {{#each context}}
+    {{>listrow}}
+    {{/each}}
+    </div>
+  </div>
+</div>

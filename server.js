@@ -1,64 +1,136 @@
-var express = require("express");
+const express = require("express");
+const formidable = require("formidable");
+const hbs = require("express-handlebars");
 const path = require("path");
+const session = require("express-session");
+const PORT = process.env.PORT || 3000;
+
 var app = express();
-var formidable = require("formidable");
-var hbs = require("express-handlebars");
-app.use(express.static("static"));
-const PORT = 3000;
 app.use(
   express.urlencoded({
     extended: true,
   })
 );
-app.set("views", path.join(__dirname, "views")); // ustalamy katalog views
-app.engine("hbs", hbs({ defaultLayout: "main.hbs" })); // domyślny layout, potem można go zmienić
+app.use(express.static("static"));
+app.use(session({ secret: "secret", resave: true, saveUninitialized: true }));
+app.set("views", path.join(__dirname, "views"));
+app.engine(
+  "hbs",
+  hbs({
+    defaultLayout: "main.hbs",
+    extname: ".hbs",
+    partialsDir: "views/partials",
+  })
+);
 app.set("view engine", "hbs");
+
 app.listen(PORT, () => {
   console.log("server started on: " + PORT);
 });
+
 let filesArr = [];
 let counter = 1;
-app.get("/login", function (req, res) {
-  res.render("login.hbs", { layout: "login.hbs" });
+const user_credentials = {
+  username: "admin",
+  password: "admin",
+};
+
+app.get("/", (req, res) => {
+  res.redirect("/login");
 });
 
-app.get("/home", (req, res) => {
-  res.render("home.hbs", { layout: "main.hbs" });
+app.get("/login", (req, res) => {
+  if (req.session.logged) {
+    res.redirect("/upload");
+  } else {
+    res.render("login.hbs", { layout: "login.hbs" });
+  }
+});
+
+app.post("/login", function (req, res) {
+  if (
+    user_credentials.username === req.body.username &&
+    user_credentials.password === req.body.password
+  ) {
+    req.session.logged = true;
+    res.redirect("/upload");
+  } else {
+    res.render("login.hbs", {
+      layout: "login.hbs",
+      context: "You have entered an invalid login or password",
+    });
+  }
 });
 
 app.get("/upload", (req, res) => {
-  res.render("upload.hbs", { layout: "main.hbs" });
+  if (req.session.logged) {
+    res.render("upload.hbs", { layout: "main.hbs" });
+  } else res.redirect("/login");
 });
 
 app.get("/filemanager", (req, res) => {
-  res.setHeader("Content-type", "application/json");
-  res.send(JSON.stringify(filesArr, null, 4));
+  if (req.session.logged) {
+    res.render("filemanager.hbs", { layout: "main.hbs", context: filesArr });
+  } else res.redirect("/login");
 });
 
 app.post("/handleupload", function (req, res) {
-  let form = formidable({});
-  form.multiples = true;
-  form.uploadDir = __dirname + "/static/upload/"; // folder do zapisu zdjęcia
-  form.keepExtensions = true; // zapis z rozszerzeniem pliku
-  form.parse(req, function (err, fields, files) {
-    console.log("----- fields sent ------");
-    console.log(fields);
+  if (req.session.logged) {
+    let form = formidable({});
+    form.multiples = true;
+    form.uploadDir = __dirname + "/static/upload/"; // folder do zapisu zdjęcia
+    form.keepExtensions = true; // zapis z rozszerzeniem pliku
+    form.parse(req, function (err, fields, files) {
+      console.log("----- fields sent ------");
+      console.log(fields);
 
-    console.log("----- files sent ------");
-    if (!Array.isArray(files.filesupload))
-      files.filesupload = [files.filesupload];
-    files.filesupload.forEach((file) => {
-      filesArr.push({
-        id: counter,
-        name: file.name,
-        path: file.path,
-        size: file.size,
-        type: file.type,
-        date: Date.now(),
+      console.log("----- files sent ------");
+      if (!Array.isArray(files.filesupload))
+        files.filesupload = [files.filesupload];
+      files.filesupload.forEach((file) => {
+        filesArr.push({
+          id: counter,
+          name: file.name,
+          path: file.path,
+          size: file.size,
+          type: file.type,
+          date: Date.now(),
+        });
+        counter += 1;
       });
-      counter += 1;
+      console.log(JSON.stringify(files.filesupload, null, 4));
+      res.redirect("/filemanager");
     });
-    console.log(JSON.stringify(files.filesupload, null, 4));
-    res.redirect("/upload");
-  });
+  } else res.redirect("/login");
+});
+
+app.post("/delete", (req, res) => {
+  if (req.session.logged) {
+    filesArr = filesArr.filter((f) => f.id != req.body.id);
+    res.redirect("/filemanager");
+  } else res.redirect("/login");
+});
+
+app.post("/download", (req, res) => {
+  if (req.session.logged) {
+    res.download(filesArr.find((x) => x.id == req.body.id).path);
+  } else res.redirect("/login");
+});
+
+app.get("/reset", (req, res) => {
+  if (req.session.logged) {
+    filesArr = [];
+    res.redirect("/filemanager");
+  } else res.redirect("/login");
+});
+
+app.get("/info", (req, res) => {
+  if (req.session.logged) {
+    const ctx = filesArr.find((f) => f.id === parseInt(req.query.id));
+    console.log(ctx);
+    res.render("info.hbs", {
+      layout: "main.hbs",
+      context: ctx,
+    });
+  } else res.redirect("/login");
 });
