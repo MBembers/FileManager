@@ -110,3 +110,31 @@ span {
 .left-text {
   margin-bottom: 15px;
 }
+.upload-form {
+  margin: 20px 0 0 20px;
+}
+.icon {
+  width: 108px;
+  height: 120px;
+  transform: scale(0.45);
+}
+.main-container-login {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#username,
+#password {
+  height: 40px;
+  font-size: 20px;
+  border: 3px solid white;
+}
+#login-btn {
+  padding: 0;
+  margin: 0;
+  width: 80px;
+  height: 40px;
+}

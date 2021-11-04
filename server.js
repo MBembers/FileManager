@@ -70,7 +70,23 @@ app.get("/upload", (req, res) => {
 
 app.get("/filemanager", (req, res) => {
   if (req.session.logged) {
-    res.render("filemanager.hbs", { layout: "main.hbs", context: filesArr });
+    const ctx = filesArr.map((f) => {
+      const url = "/assets/";
+      if (f.type === "text/plain") f.icon_path = url + "txt.png";
+      else if (f.type === "image/jpeg") f.icon_path = url + "jpg.png";
+      else if (f.type === "image/png") f.icon_path = url + "png.png";
+      else if (f.type === "application/pdf") f.icon_path = url + "pdf.png";
+      else if (f.type === "application/x-zip-compressed")
+        f.icon_path = url + "zip.png";
+      else if (f.type === "text/plain") f.icon_path = url + "txt.png";
+      else f.icon_path = url + "unknown.png";
+      return f;
+    });
+    console.log(ctx);
+    res.render("filemanager.hbs", {
+      layout: "main.hbs",
+      context: ctx,
+    });
   } else res.redirect("/login");
 });
 

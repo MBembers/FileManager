@@ -1,4 +1,18 @@
-<form enctype="multipart/form-data" method="POST" action="/handleupload">
-  <input type="file" multiple required name="filesupload" />
-  <input type="submit" value="wyslij" />
-</form>
+<div class="container">
+  <div class="left-panel">
+    <div class="left-text">
+      Upload files
+    </div>
+  </div>
+  <div class="right-panel">
+    <form
+      class="upload-form"
+      enctype="multipart/form-data"
+      method="POST"
+      action="/handleupload"
+    >
+      <input type="file" multiple required name="filesupload" />
+      <input type="submit" value="wyslij" />
+    </form>
+  </div>
+</div>
