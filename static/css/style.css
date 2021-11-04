@@ -1,0 +1,10 @@
+body {
+  margin: 0;
+}
+#navbar {
+}
+.main-container {
+  background-color: darkslateblue;
+  width: 100vw;
+  height: 100vh;
+}
